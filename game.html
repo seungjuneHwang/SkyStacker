@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sky Stacker - Play Game</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #0F172A;
+      color: #F8FAFC;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      overflow: hidden;
+      touch-action: manipulation;
+    }
+    #game-container {
+      position: relative;
+      width: 100%;
+      max-width: 480px;
+      height: 100vh;
+      max-height: 800px;
+      background: linear-gradient(to bottom, #1E293B, #0F172A);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+    }
+    .ui-overlay {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 24px;
+    }
+    .header-ui {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 900;
+      font-size: 1.5rem;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    }
+    .score-box { color: #38BDF8; }
+    .combo-box { color: #FACC15; font-size: 1rem; }
+    
+    .screen-center {
+      position: absolute;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(4px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 24px;
+      z-index: 10;
+      pointer-events: auto;
+      transition: opacity 0.3s ease;
+    }
+    .screen-center.hidden {
+      opacity: 0;
+      pointer-events: none;
+      display: none;
+    }
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 900;
+      background: linear-gradient(to right, #22D3EE, #E879F9);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+    }
+    p { color: #94A3B8; margin-bottom: 24px; font-size: 0.95rem; }
+    .btn {
+      background: linear-gradient(to right, #22D3EE, #3B82F6);
+      color: #0F172A;
+      font-weight: 800;
+      font-size: 1.1rem;
+      padding: 14px 32px;
+      border: none;
+      border-radius: 9999px;
+      cursor: pointer;
+      box-shadow: 0 10px 20px rgba(34, 211, 238, 0.3);
+      transition: all 0.2s;
+    }
+    .btn:hover { transform: scale(1.05); filter: brightness(1.1); }
+    .btn:active { transform: scale(0.95); }
+  </style>
+</head>
+<body>
+
+  <div id="game-container">
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- 인게임 UI 오버레이 -->
+    <div class="ui-overlay">
+      <div class="header-ui">
+        <div class="score-box" id="currentScore">0층</div>
+        <div class="combo-box" id="comboText"></div>
+      </div>
+    </div>
+
+    <!-- 시작 / 게임오버 화면 -->
+    <div id="startScreen" class="screen-center">
+      <h1>SKY STACKER</h1>
+      <p>화면을 클릭하거나 터치하여 블록을 쌓으세요!</p>
+      <button class="btn" onclick="startGame()">게임 시작</button>
+    </div>
+
+    <div id="gameOverScreen" class="screen-center hidden">
+      <h1>GAME OVER</h1>
+      <p id="finalScoreText" style="font-size: 1.2rem; color: #F8FAFC; margin-bottom: 8px;">최종 기록: 0층</p>
+      <p id="bestScoreText" style="margin-bottom: 24px;">최고 기록: 0층</p>
+      <button class="btn" onclick="startGame()">다시 하기</button>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // 캔버스 고정 해상도 설정
+    canvas.width = 480;
+    canvas.height = 800;
+
+    let gameState = 'START'; // START, PLAYING, GAMEOVER
+    let score = 0;
+    let bestScore = localStorage.getItem('sky_stacker_best') || 0;
+    let combo = 0;
+    let cameraY = 0;
+    let targetCameraY = 0;
+
+    // 블록 구조체
+    let blocks = [];
+    let currentBlock = null;
+    let particles = [];
+    let cutPieces = []; // 잘려나간 조각 파편들
+
+    const blockHeight = 35;
+    const initialBlockWidth = 200;
+    let currentWidth = initialBlockWidth;
+    let blockSpeed = 3;
+
+    class Block {
+      constructor(x, y, width, height, colorIndex) {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+        this.colorIndex = colorIndex;
+        this.dir = 1; // 1: 우측, -1: 좌측
+      }
+
+      update() {
+        this.x += blockSpeed * this.dir;
+        // 좌우 벽 충돌 시 방향 전환
+        if (this.x < 40 || this.x + this.width > canvas.width - 40) {
+          this.dir *= -1;
+        }
+      }
+
+      draw() {
+        const color = getBlockColor(this.colorIndex);
+        ctx.fillStyle = color.top;
+        ctx.fillRect(this.x, this.y, this.width, this.height);
+
+        // 입체 측면 효과
+        ctx.fillStyle = color.side;
+        ctx.fillRect(this.x, this.y + this.height, this.width, 8);
+      }
+    }
+
+    class CutPiece {
+      constructor(x, y, width, height, colorIndex, dir) {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+        this.colorIndex = colorIndex;
+        this.vx = dir * 2;
+        this.vy = -2;
+        this.gravity = 0.4;
+        this.rotation = 0;
+        this.vRot = dir * 0.05;
+      }
+
+      update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        this.vy += this.gravity;
+        this.rotation += this.vRot;
+      }
+
+      draw() {
+        ctx.save();
+        ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
+        ctx.rotate(this.rotation);
+        const color = getBlockColor(this.colorIndex);
+        ctx.fillStyle = color.top;
+        ctx.fillRect(-this.width / 2, -this.height / 2, this.width, this.height);
+        ctx.restore();
+      }
+    }
+
+    function getBlockColor(index) {
+      // HSL 무지개 그라데이션 순환
+      const hue = (index * 15) % 360;
+      return {
+        top: `hsl(${hue}, 80%, 60%)`,
+        side: `hsl(${hue}, 80%, 40%)`
+      };
+    }
+
+    function startGame() {
+      gameState = 'PLAYING';
+      score = 0;
+      combo = 0;
+      currentWidth = initialBlockWidth;
+      blockSpeed = 3;
+      blocks = [];
+      cutPieces = [];
+      cameraY = 0;
+      targetCameraY = 0;
+
+      document.getElementById('startScreen').classList.add('hidden');
+      document.getElementById('gameOverScreen').classList.add('hidden');
+      document.getElementById('currentScore').innerText = '0층';
+      document.getElementById('comboText').innerText = '';
+
+      // 기준 바닥 블록 생성
+      const baseBlock = new Block((canvas.width - initialBlockWidth) / 2, canvas.height - 150, initialBlockWidth, blockHeight, 0);
+      blocks.push(baseBlock);
+
+      spawnNewBlock();
+    }
+
+    function spawnNewBlock() {
+      const lastBlock = blocks[blocks.length - 1];
+      const nextY = lastBlock.y - blockHeight;
+      // 속도 점진적 증가
+      blockSpeed = 3 + Math.floor(blocks.length / 5) * 0.5;
+      currentBlock = new Block(40, nextY, currentWidth, blockHeight, blocks.length);
+    }
+
+    function dropBlock() {
+      if (gameState !== 'PLAYING') return;
+
+      const lastBlock = blocks[blocks.length - 1];
+      const diff = currentBlock.x - lastBlock.x;
+      const absDiff = Math.abs(diff);
+
+      // 완벽 판정 (Perfect)
+      if (absDiff < 4) {
+        currentBlock.x = lastBlock.x; // 오차 보정
+        combo++;
+        if (combo >= 3) {
+          // 3연속 퍼펙트 시 너비 회복 보상
+          currentWidth = Math.min(initialBlockWidth, currentWidth + 10);
+          currentBlock.width = currentWidth;
+          showComboText('✨ PERFECT + 콤보 보상!');
+          combo = 0;
+        } else {
+          showComboText('🔥 PERFECT!');
+        }
+        blocks.push(currentBlock);
+        score++;
+      } else if (absDiff < currentWidth) {
+        // 일반 착지 및 절단 판정
+        combo = 0;
+        showComboText('');
+        const overlapWidth = currentWidth - absDiff;
+        
+        let cutWidth = absDiff;
+        let cutX = diff > 0 ? currentBlock.x + overlapWidth : currentBlock.x;
+
+        // 절단된 파편 추가
+        cutPieces.push(new CutPiece(cutX, currentBlock.y, cutWidth, blockHeight, currentBlock.colorIndex, diff > 0 ? 1 : -1));
+
+        // 새 블록 크기 및 위치 조정
+        currentWidth = overlapWidth;
+        currentBlock.width = overlapWidth;
+        if (diff > 0) {
+          // 우측이 잘려나간 경우 위치 유지
+        } else {
+          // 좌측이 잘려나간 경우 위치 재조정
+          currentBlock.x = lastBlock.x;
+        }
+
+        blocks.push(currentBlock);
+        score++;
+      } else {
+        // 완전 빗나감 (게임 오버)
+        gameState = 'GAMEOVER';
+        cutPieces.push(new CutPiece(currentBlock.x, currentBlock.y, currentWidth, blockHeight, currentBlock.colorIndex, 1));
+        showGameOver();
+        return;
+      }
+
+      document.getElementById('currentScore').innerText = `${score}층`;
+
+      // 카메라 위로 스크롤 연출
+      if (blocks.length > 5) {
+        targetCameraY += blockHeight;
+      }
+
+      spawnNewBlock();
+    }
+
+    function showComboText(text) {
+      const el = document.getElementById('comboText');
+      el.innerText = text;
+      setTimeout(() => { if (el.innerText === text) el.innerText = ''; }, 1000);
+    }
+
+    function showGameOver() {
+      if (score > bestScore) {
+        bestScore = score;
+        localStorage.setItem('sky_stacker_best', bestScore);
+      }
+      document.getElementById('finalScoreText').innerText = `최종 기록: ${score}층`;
+      document.getElementById('bestScoreText').innerText = `최고 기록: ${bestScore}층`;
+      document.getElementById('gameOverScreen').classList.remove('hidden');
+    }
+
+    // 입력 이벤트 리스너 (마우스 클릭 / 터치 / 스페이스바)
+    window.addEventListener('mousedown', (e) => {
+      if (e.target.tagName !== 'BUTTON') dropBlock();
+    });
+    window.addEventListener('touchstart', (e) => {
+      if (e.target.tagName !== 'BUTTON') {
+        e.preventDefault();
+        dropBlock();
+      }
+    }, { passive: false });
+    window.addEventListener('keydown', (e) => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        dropBlock();
+      }
+    });
+
+    // 메인 게임 루프
+    function gameLoop() {
+      // 카메라 부드러운 보간 (Lerp)
+      cameraY += (targetCameraY - cameraY) * 0.1;
+
+      // 화면 클리어
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      ctx.save();
+      ctx.translate(0, cameraY);
+
+      // 배경 그리드 선 연출
+      ctx.strokeStyle = '#1E293B';
+      ctx.lineWidth = 1;
+      for (let i = -10; i < 50; i++) {
+        ctx.beginPath();
+        ctx.moveTo(0, i * 100);
+        ctx.lineTo(canvas.width, i * 100);
+        ctx.stroke();
+      }
+
+      // 기존 블록들 렌더링
+      blocks.forEach(block => block.draw());
+
+      // 현재 움직이는 블록 렌더링
+      if (gameState === 'PLAYING' && currentBlock) {
+        currentBlock.update();
+        currentBlock.draw();
+      }
+
+      // 잘려나간 파편들 업데이트 및 렌더링
+      cutPieces.forEach((p, index) => {
+        p.update();
+        p.draw();
+        if (p.y > canvas.height + cameraY + 200) {
+          cutPieces.splice(index, 1);
+        }
+      });
+
+      ctx.restore();
+
+      requestAnimationFrame(gameLoop);
+    }
+
+    // 루프 실행
+    gameLoop();
+  </script>
+</body>
+</html>
