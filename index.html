@@ -4,9 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Sky Stacker - 공식 게임 소개 페이지</title>
-  <!-- Tailwind CSS CDN (빠른 개발 및 스타일링용) -->
+  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Google Fonts: Pretendard 스타일의 깔끔한 폰트 -->
+  <!-- Google Fonts: Pretendard -->
   <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
   <style>
     body {
@@ -15,7 +15,6 @@
       color: #F8FAFC;
     }
     
-    /* 네온 텍스트 및 글로우 효과 */
     .neon-text-cyan {
       text-shadow: 0 0 10px rgba(6, 182, 212, 0.6), 0 0 20px rgba(6, 182, 212, 0.4);
     }
@@ -26,7 +25,6 @@
       box-shadow: 0 0 25px rgba(56, 189, 248, 0.45);
     }
     
-    /* 와이어프레임 느낌의 아이소메트릭 3D 타워 SVG 애니메이션 */
     @keyframes float {
       0%, 100% { transform: translateY(0px); }
       50% { transform: translateY(-12px); }
@@ -38,11 +36,11 @@
 </head>
 <body class="antialiased selection:bg-cyan-500 selection:text-black">
 
-  <!-- ==================== 1. HEADER (네비게이션 바) ==================== -->
+  <!-- ==================== 1. HEADER ==================== -->
   <header class="sticky top-0 z-50 backdrop-blur-md bg-slate-900/80 border-b border-slate-800">
     <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
       <!-- 로고 -->
-      <a href="#" class="flex items-center gap-3 group">
+      <a href="index.html" class="flex items-center gap-3 group">
         <div class="w-10 h-10 rounded-lg bg-gradient-to-tr from-cyan-500 to-fuchsia-500 flex items-center justify-center font-black text-xl text-slate-950 group-hover:scale-105 transition-transform">
           🏗️
         </div>
@@ -59,20 +57,18 @@
         <a href="#leaderboard" class="hover:text-cyan-400 transition-colors">LEADERBOARD</a>
       </nav>
 
-      <!-- CTA 버튼 -->
-      <a href="#play" class="px-5 py-2.5 rounded-full font-bold text-sm bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 shadow-lg shadow-cyan-500/25 transition-all hover:scale-105">
+      <!-- CTA 버튼 -> game.html로 연결 -->
+      <a href="game.html" class="px-5 py-2.5 rounded-full font-bold text-sm bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 shadow-lg shadow-cyan-500/25 transition-all hover:scale-105">
         PLAY NOW
       </a>
     </div>
   </header>
 
-  <!-- ==================== 2. HERO SECTION (첫 화면) ==================== -->
+  <!-- ==================== 2. HERO SECTION ==================== -->
   <section id="hero" class="relative min-h-[calc(100vh-5rem)] flex items-center justify-center px-6 py-16 overflow-hidden">
-    <!-- 배경 네온 그리드 연출 -->
     <div class="absolute inset-0 opacity-20 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)]"></div>
     
     <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center relative z-10">
-      <!-- 히어로 카피 -->
       <div class="text-center lg:text-left space-y-6">
         <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-cyan-500/30 bg-cyan-950/40 text-cyan-400 text-xs font-semibold tracking-wider uppercase">
           <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
@@ -90,261 +86,8 @@
           하늘을 찌르는 나만의 타워를 건설하세요. 완벽한 타이밍에 블록을 맞춰 놓고 별을 향해 더 높이 올라가세요!
         </p>
 
-        <!-- 메인 CTA 버튼 -->
+        <!-- 메인 CTA 버튼 -> game.html로 연결 -->
         <div class="pt-4 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
-          <button onclick="alert('게임 개발 진행 예정입니다!')" class="w-full sm:w-auto px-8 py-4 rounded-2xl font-black text-lg bg-gradient-to-r from-cyan-400 via-sky-400 to-blue-600 hover:from-cyan-300 hover:to-blue-500 text-slate-950 shadow-2xl shadow-cyan-500/40 transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-3">
+          <a href="game.html" class="w-full sm:w-auto px-8 py-4 rounded-2xl font-black text-lg bg-gradient-to-r from-cyan-400 via-sky-400 to-blue-600 hover:from-cyan-300 hover:to-blue-500 text-slate-950 shadow-2xl shadow-cyan-500/40 transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-3 no-underline">
             <span>START STACKING</span>
-            <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-          </button>
-        </div>
-      </div>
-
-      <!-- 히어로 아이소메트릭 3D 타워 일러스트레이션 (SVG) -->
-      <div class="flex justify-center items-center">
-        <div class="relative floating-tower">
-          <svg width="340" height="420" viewBox="0 0 340 420" fill="none" xmlns="http://www.w3.org/2000/svg" class="filter drop-shadow-[0_20px_30px_rgba(6,182,212,0.3)]">
-            <!-- 그리드 구름 배경 -->
-            <path d="M20 380 Q 80 340 170 380 T 320 380" stroke="#334155" stroke-width="2" stroke-dasharray="4 4"/>
-            <!-- 3D 쌓여진 블록 1 (하단 - Cyan) -->
-            <g transform="translate(70, 260)">
-              <path d="M100 0 L200 50 L100 100 L0 50 Z" fill="#0891B2" stroke="#22D3EE" stroke-width="2"/>
-              <path d="M0 50 L100 100 L100 140 L0 90 Z" fill="#0E7490" stroke="#22D3EE" stroke-width="2"/>
-              <path d="M100 100 L200 50 L200 90 L100 140 Z" fill="#155E75" stroke="#22D3EE" stroke-width="2"/>
-            </g>
-            <!-- 3D 쌓여진 블록 2 (중단 - Sky Blue) -->
-            <g transform="translate(70, 190)">
-              <path d="M100 0 L200 50 L100 100 L0 50 Z" fill="#0284C7" stroke="#38BDF8" stroke-width="2"/>
-              <path d="M0 50 L100 100 L100 140 L0 90 Z" fill="#0369A1" stroke="#38BDF8" stroke-width="2"/>
-              <path d="M100 100 L200 50 L200 90 L100 140 Z" fill="#075985" stroke="#38BDF8" stroke-width="2"/>
-            </g>
-            <!-- 3D 쌓여진 블록 3 (상단 - Purple/Magenta) -->
-            <g transform="translate(70, 120)">
-              <path d="M100 0 L200 50 L100 100 L0 50 Z" fill="#C026D3" stroke="#E879F9" stroke-width="2"/>
-              <path d="M0 50 L100 100 L100 140 L0 90 Z" fill="#A21CAF" stroke="#E879F9" stroke-width="2"/>
-              <path d="M100 100 L200 50 L200 90 L100 140 Z" fill="#86198F" stroke="#E879F9" stroke-width="2"/>
-            </g>
-            <!-- 3D 최상단 탑 블록 (Yellow Perfect) -->
-            <g transform="translate(70, 50)">
-              <path d="M100 0 L200 50 L100 100 L0 50 Z" fill="#FACC15" stroke="#FEF08A" stroke-width="3"/>
-              <path d="M0 50 L100 100 L100 140 L0 90 Z" fill="#EAB308" stroke="#FEF08A" stroke-width="3"/>
-              <path d="M100 100 L200 50 L200 90 L100 140 Z" fill="#CA8A04" stroke="#FEF08A" stroke-width="3"/>
-            </g>
-          </svg>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ==================== 3. KEY FEATURES (핵심 특징 3분할 카드) ==================== -->
-  <section id="features" class="py-24 bg-slate-900/50 border-y border-slate-800 px-6">
-    <div class="max-w-7xl mx-auto">
-      <div class="text-center space-y-4 mb-16">
-        <h2 class="text-xs font-bold tracking-widest text-cyan-400 uppercase">[KEY FEATURES]</h2>
-        <p class="text-3xl sm:text-4xl font-extrabold text-slate-100">손끝에서 펼쳐지는 짜릿한 아케이드 퍼즐</p>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <!-- 카드 1: TIMING IS EVERYTHING -->
-        <div class="p-8 rounded-2xl bg-slate-800/40 border border-slate-700/60 neon-border transition-all hover:-translate-y-2">
-          <div class="w-14 h-14 rounded-xl bg-cyan-950 border border-cyan-500/40 flex items-center justify-center text-cyan-400 text-2xl font-bold mb-6">
-            ⏱️
-          </div>
-          <span class="inline-block px-2.5 py-1 rounded bg-emerald-500/20 text-emerald-400 text-xs font-bold mb-3">PERFECT</span>
-          <h3 class="text-xl font-bold mb-3 text-slate-100">TIMING IS EVERYTHING</h3>
-          <p class="text-slate-400 text-sm leading-relaxed">
-            클릭 한 번으로 블록을 배치하세요. 오차 없는 타이밍으로 'PERFECT' 콤보를 연속 달성하고 최고 점수를 노리세요!
-          </p>
-        </div>
-
-        <!-- 카드 2: SLICE & SURVIVE -->
-        <div class="p-8 rounded-2xl bg-slate-800/40 border border-slate-700/60 neon-border transition-all hover:-translate-y-2">
-          <div class="w-14 h-14 rounded-xl bg-fuchsia-950 border border-fuchsia-500/40 flex items-center justify-center text-fuchsia-400 text-2xl font-bold mb-6">
-            ✂️
-          </div>
-          <h3 class="text-xl font-bold mb-3 text-slate-100">SLICE & SURVIVE</h3>
-          <p class="text-slate-400 text-sm leading-relaxed">
-            타이밍이 엇갈리면 튀어나온 블록이 싹둑 잘려 나갑니다! 점차 좁아지는 타워 위에서 끝까지 살아남으세요.
-          </p>
-        </div>
-
-        <!-- 카드 3: NEON RAINBOW -->
-        <div class="p-8 rounded-2xl bg-slate-800/40 border border-slate-700/60 neon-border transition-all hover:-translate-y-2">
-          <div class="w-14 h-14 rounded-xl bg-amber-950 border border-amber-500/40 flex items-center justify-center text-amber-400 text-2xl font-bold mb-6">
-            🌈
-          </div>
-          <h3 class="text-xl font-bold mb-3 text-slate-100">NEON RAINBOW</h3>
-          <p class="text-slate-400 text-sm leading-relaxed">
-            층수가 올라갈수록 화려하게 변화하는 네온 무지개 그라데이션 시각 효과를 경험하세요.
-          </p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ==================== 4. HOW TO PLAY & PROGRESSION ==================== -->
-  <section id="how-to-play" class="py-24 px-6 max-w-7xl mx-auto">
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-16">
-      
-      <!-- [HOW TO PLAY] 조작 법 -->
-      <div class="space-y-8">
-        <div>
-          <h2 class="text-xs font-bold tracking-widest text-cyan-400 uppercase mb-2">[HOW TO PLAY]</h2>
-          <h3 class="text-3xl font-extrabold">3단계로 배우는 직관적 조작법</h3>
-        </div>
-
-        <div class="space-y-6">
-          <div class="flex items-start gap-4 p-5 rounded-xl bg-slate-800/30 border border-slate-700/50">
-            <div class="w-8 h-8 rounded-full bg-cyan-500/20 text-cyan-400 font-extrabold flex items-center justify-center shrink-0">1</div>
-            <div>
-              <h4 class="font-bold text-slate-200">TAP / CLICK TO DROP</h4>
-              <p class="text-slate-400 text-sm">좌우로 이동하는 블록을 원하는 위치에서 마우스 클릭 또는 화면 터치로 하강시킵니다.</p>
-            </div>
-          </div>
-
-          <div class="flex items-start gap-4 p-5 rounded-xl bg-slate-800/30 border border-slate-700/50">
-            <div class="w-8 h-8 rounded-full bg-cyan-500/20 text-cyan-400 font-extrabold flex items-center justify-center shrink-0">2</div>
-            <div>
-              <h4 class="font-bold text-slate-200">MATCH BELOW BLOCK</h4>
-              <p class="text-slate-400 text-sm">아래 블록의 위치와 정확히 맞춰 적재하세요. 벗어난 영역은 포인트를 잃고 잘려 나갑니다.</p>
-            </div>
-          </div>
-
-          <div class="flex items-start gap-4 p-5 rounded-xl bg-slate-800/30 border border-slate-700/50">
-            <div class="w-8 h-8 rounded-full bg-cyan-500/20 text-cyan-400 font-extrabold flex items-center justify-center shrink-0">3</div>
-            <div>
-              <h4 class="font-bold text-slate-200">BUILD THE TALLEST TOWER</h4>
-              <p class="text-slate-400 text-sm">한계 없이 구름과 우주를 지나 최고 높이의 타워를 건설하고 세계 기록에 도전하세요!</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- [PROGRESSION & RANKS] 달성 뱃지 -->
-      <div class="space-y-8">
-        <div>
-          <h2 class="text-xs font-bold tracking-widest text-cyan-400 uppercase mb-2">[PROGRESSION & RANKS]</h2>
-          <h3 class="text-3xl font-extrabold">층수 달성 뱃지 시스템</h3>
-        </div>
-
-        <div class="grid grid-cols-2 gap-4">
-          <div class="p-5 rounded-2xl bg-slate-800/40 border border-slate-700/60 text-center space-y-2">
-            <div class="text-3xl">☁️</div>
-            <div class="font-bold text-sm text-slate-200">CLOUD ARCHITECT</div>
-            <div class="text-xs text-slate-500">10층 달성</div>
-          </div>
-          <div class="p-5 rounded-2xl bg-slate-800/40 border border-slate-700/60 text-center space-y-2">
-            <div class="text-3xl">🚀</div>
-            <div class="font-bold text-sm text-slate-200">ATMOSPHERE EXPLORER</div>
-            <div class="text-xs text-slate-500">30층 달성</div>
-          </div>
-          <div class="p-5 rounded-2xl bg-slate-800/40 border border-slate-700/60 text-center space-y-2">
-            <div class="text-3xl">🛰️</div>
-            <div class="font-bold text-sm text-slate-200">SPACE ELEVATOR ARTISAN</div>
-            <div class="text-xs text-slate-500">60층 달성</div>
-          </div>
-          <div class="p-5 rounded-2xl bg-slate-800/40 border border-slate-700/60 text-center space-y-2">
-            <div class="text-3xl">🪐</div>
-            <div class="font-bold text-sm text-slate-200">ORBITAL STACK MASTER</div>
-            <div class="text-xs text-slate-500">100층 달성</div>
-          </div>
-        </div>
-
-        <!-- 커뮤니티 버튼 -->
-        <a href="#" class="block w-full py-4 rounded-xl bg-indigo-600/20 border border-indigo-500/40 hover:bg-indigo-600/30 text-indigo-300 font-bold text-center transition-all">
-          JOIN THE DISCORD COMMUNITY 💬
-        </a>
-      </div>
-
-    </div>
-  </section>
-
-  <!-- ==================== 5. LEADERBOARD (실시간 랭킹 보드) ==================== -->
-  <section id="leaderboard" class="py-24 bg-slate-900/50 border-t border-slate-800 px-6">
-    <div class="max-w-4xl mx-auto">
-      <div class="text-center space-y-4 mb-12">
-        <h2 class="text-xs font-bold tracking-widest text-cyan-400 uppercase">[LEADERBOARD SECTION]</h2>
-        <h3 class="text-3xl sm:text-4xl font-black">명예의 전당 (GLOBAL RANKINGS)</h3>
-      </div>
-
-      <div class="bg-slate-800/50 rounded-2xl border border-slate-700 overflow-hidden shadow-2xl">
-        <div class="overflow-x-auto">
-          <table class="w-full text-left border-collapse">
-            <thead>
-              <tr class="bg-slate-900/80 text-xs font-bold text-slate-400 uppercase border-b border-slate-700">
-                <th class="py-4 px-6">RANK</th>
-                <th class="py-4 px-6">PLAYER NAME</th>
-                <th class="py-4 px-6">TOWERS / BLOCKS</th>
-                <th class="py-4 px-6">TIME</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-700/50 text-sm font-semibold">
-              <tr class="hover:bg-cyan-950/30 transition-colors">
-                <td class="py-4 px-6 text-amber-400 font-bold">🥇 1</td>
-                <td class="py-4 px-6 text-slate-100">STARGAZER</td>
-                <td class="py-4 px-6 text-cyan-400 font-extrabold">148 BLOCKS</td>
-                <td class="py-4 px-6 text-slate-400">02:35</td>
-              </tr>
-              <tr class="hover:bg-cyan-950/30 transition-colors">
-                <td class="py-4 px-6 text-slate-300 font-bold">🥈 2</td>
-                <td class="py-4 px-6 text-slate-100">COSMIC_CAKE</td>
-                <td class="py-4 px-6 text-cyan-400 font-extrabold">135 BLOCKS</td>
-                <td class="py-4 px-6 text-slate-400">02:11</td>
-              </tr>
-              <tr class="hover:bg-cyan-950/30 transition-colors">
-                <td class="py-4 px-6 text-amber-600 font-bold">🥉 3</td>
-                <td class="py-4 px-6 text-slate-100">CONISENNER</td>
-                <td class="py-4 px-6 text-cyan-400 font-extrabold">130 BLOCKS</td>
-                <td class="py-4 px-6 text-slate-400">02:36</td>
-              </tr>
-              <tr class="hover:bg-cyan-950/30 transition-colors">
-                <td class="py-4 px-6 text-slate-500">4</td>
-                <td class="py-4 px-6 text-slate-300">EASIAIA</td>
-                <td class="py-4 px-6 text-cyan-400 font-extrabold">119 BLOCKS</td>
-                <td class="py-4 px-6 text-slate-400">02:37</td>
-              </tr>
-              <tr class="hover:bg-cyan-950/30 transition-colors">
-                <td class="py-4 px-6 text-slate-500">5</td>
-                <td class="py-4 px-6 text-slate-300">BAWDLER</td>
-                <td class="py-4 px-6 text-cyan-400 font-extrabold">109 BLOCKS</td>
-                <td class="py-4 px-6 text-slate-400">02:38</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        
-        <div class="p-4 bg-slate-900/60 text-center border-t border-slate-700">
-          <button class="text-xs font-bold text-cyan-400 hover:text-cyan-300 tracking-wider uppercase">
-            VIEW ALL RANKINGS →
-          </button>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ==================== 6. FOOTER ==================== -->
-  <footer class="py-12 px-6 border-t border-slate-800 text-slate-500 text-sm">
-    <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
-      
-      <!-- 저작권 및 서비스 약관 -->
-      <div class="space-y-1 text-center md:text-left">
-        <div class="font-extrabold text-slate-300 tracking-wider">SKY STACKER</div>
-        <p class="text-xs">© 2026 Sky Stacker, Inc. All rights reserved.</p>
-        <div class="text-xs space-x-3 pt-1">
-          <a href="#" class="hover:underline">Terms of Service</a>
-          <span>|</span>
-          <a href="#" class="hover:underline">Privacy Policy</a>
-        </div>
-      </div>
-
-      <!-- 소셜 SNS 아이콘 -->
-      <div class="flex items-center gap-6 text-lg text-slate-400">
-        <a href="#" class="hover:text-cyan-400 transition-colors">🐦 Twitter</a>
-        <a href="#" class="hover:text-cyan-400 transition-colors">💬 Discord</a>
-        <a href="#" class="hover:text-cyan-400 transition-colors">📷 Instagram</a>
-      </div>
-
-    </div>
-  </footer>
-
-</body>
-</html>
+            <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24"><path d="M8 5v1
