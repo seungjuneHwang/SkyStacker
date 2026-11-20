@@ -4,6 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Sky Stacker - Play Game</title>
+  <!-- Firebase SDK CDN 추가 -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -31,122 +34,54 @@
       flex-direction: column;
       align-items: center;
     }
-    canvas {
-      display: block;
-      width: 100%;
-      height: 100%;
-      cursor: pointer;
-    }
+    canvas { display: block; width: 100%; height: 100%; cursor: pointer; }
     .ui-overlay {
-      position: absolute;
-      top: 0; left: 0; width: 100%; height: 100%;
-      pointer-events: none;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      padding: 24px;
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      pointer-events: none; display: flex; flex-direction: column;
+      justify-content: space-between; padding: 24px;
     }
     .header-ui {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-weight: 900;
-      font-size: 1.5rem;
-      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+      display: flex; justify-content: space-between; align-items: center;
+      font-weight: 900; font-size: 1.5rem; text-shadow: 0 2px 4px rgba(0,0,0,0.5);
     }
     .score-box { color: #38BDF8; }
     .combo-box { color: #FACC15; font-size: 1rem; }
     
     .screen-center {
-      position: absolute;
-      inset: 0;
-      background: rgba(15, 23, 42, 0.88);
-      backdrop-filter: blur(6px);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 24px;
-      z-index: 10;
-      pointer-events: auto;
-      transition: opacity 0.3s ease;
+      position: absolute; inset: 0; background: rgba(15, 23, 42, 0.88);
+      backdrop-filter: blur(6px); display: flex; flex-direction: column;
+      align-items: center; justify-content: center; text-align: center;
+      padding: 24px; z-index: 10; pointer-events: auto; transition: opacity 0.3s ease;
     }
-    .screen-center.hidden {
-      opacity: 0;
-      pointer-events: none;
-      display: none;
-    }
+    .screen-center.hidden { opacity: 0; pointer-events: none; display: none; }
     h1 {
-      font-size: 2.5rem;
-      font-weight: 900;
+      font-size: 2.5rem; font-weight: 900;
       background: linear-gradient(to right, #22D3EE, #E879F9);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin-bottom: 8px;
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 8px;
     }
     p { color: #94A3B8; margin-bottom: 20px; font-size: 0.95rem; }
-    
-    .input-group {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 20px;
-      width: 100%;
-      max-width: 300px;
-    }
+    .input-group { display: flex; gap: 8px; margin-bottom: 20px; width: 100%; max-width: 300px; }
     input[type="text"] {
-      flex: 1;
-      padding: 12px 16px;
-      border-radius: 12px;
-      border: 1px solid #334155;
-      background: #1E293B;
-      color: #F8FAFC;
-      font-weight: 700;
-      font-size: 1rem;
-      outline: none;
+      flex: 1; padding: 12px 16px; border-radius: 12px; border: 1px solid #334155;
+      background: #1E293B; color: #F8FAFC; font-weight: 700; font-size: 1rem; outline: none;
     }
-    input[type="text"]:focus {
-      border-color: #22D3EE;
-    }
+    input[type="text"]:focus { border-color: #22D3EE; }
     .btn {
-      background: linear-gradient(to right, #22D3EE, #3B82F6);
-      color: #0F172A;
-      font-weight: 800;
-      font-size: 1.05rem;
-      padding: 12px 24px;
-      border: none;
-      border-radius: 9999px;
-      cursor: pointer;
-      box-shadow: 0 10px 20px rgba(34, 211, 238, 0.3);
-      transition: all 0.2s;
-      text-decoration: none;
-      display: inline-block;
+      background: linear-gradient(to right, #22D3EE, #3B82F6); color: #0F172A;
+      font-weight: 800; font-size: 1.05rem; padding: 12px 24px; border: none;
+      border-radius: 9999px; cursor: pointer; box-shadow: 0 10px 20px rgba(34, 211, 238, 0.3);
+      transition: all 0.2s; text-decoration: none; display: inline-block;
     }
     .btn:hover { transform: scale(1.05); filter: brightness(1.1); }
     .btn:active { transform: scale(0.95); }
-    .btn-secondary {
-      background: #334155;
-      color: #F8FAFC;
-      box-shadow: none;
-      margin-top: 12px;
-      font-size: 0.9rem;
-      padding: 10px 20px;
-    }
-    .save-msg {
-      color: #4ADE80;
-      font-size: 0.85rem;
-      font-weight: 700;
-      margin-bottom: 16px;
-      height: 20px;
-    }
+    .btn-secondary { background: #334155; color: #F8FAFC; box-shadow: none; margin-top: 12px; font-size: 0.9rem; padding: 10px 20px; }
+    .save-msg { color: #4ADE80; font-size: 0.85rem; font-weight: 700; margin-bottom: 16px; height: 20px; }
   </style>
 </head>
 <body>
 
   <div id="game-container">
     <canvas id="gameCanvas"></canvas>
-
-    <!-- 인게임 UI -->
     <div class="ui-overlay">
       <div class="header-ui">
         <div class="score-box" id="currentScore">0층</div>
@@ -154,42 +89,50 @@
       </div>
     </div>
 
-    <!-- 시작 화면 -->
     <div id="startScreen" class="screen-center">
       <h1>SKY STACKER</h1>
-      <p>화면을 클릭하거나 터치하여 블록을 쌓으세요!</p>
+      <p>실시간 클라우드 랭킹 모드</p>
       <button class="btn" onclick="startGame()">게임 시작</button>
       <a href="index.html" class="btn btn-secondary">홈으로 돌아가기</a>
     </div>
 
-    <!-- 게임오버 & 랭킹 등록 화면 -->
     <div id="gameOverScreen" class="screen-center hidden">
       <h1>GAME OVER</h1>
       <p id="finalScoreText" style="font-size: 1.25rem; color: #F8FAFC; font-weight: 800; margin-bottom: 4px;">최종 기록: 0층</p>
-      <p id="bestScoreText" style="margin-bottom: 16px;">최고 기록: 0층</p>
       
-      <!-- 닉네임 입력 및 랭킹 등록 -->
       <div class="input-group" id="rankInputBox">
         <input type="text" id="playerNameInput" placeholder="닉네임 입력 (최대 10자)" maxlength="10" />
-        <button class="btn" style="border-radius: 12px; padding: 12px 18px;" onclick="saveScore()">등록</button>
+        <button class="btn" style="border-radius: 12px; padding: 12px 18px;" onclick="saveScoreToCloud()">등록</button>
       </div>
       <div class="save-msg" id="saveMessage"></div>
 
       <button class="btn" onclick="startGame()">다시 하기</button>
-      <a href="index.html#leaderboard" class="btn btn-secondary">명예의 전당 보기 🏆</a>
+      <a href="index.html#leaderboard" class="btn btn-secondary">실시간 명예의 전당 보기 🏆</a>
     </div>
   </div>
 
   <script>
+    // 🔥 [중요] 본인의 Firebase 콘솔 설정값으로 교체하세요!
+    const firebaseConfig = {
+        apiKey: "AIzaSyDWycAj6uMSRScJZ6Ogd-vHLcJfHXDzz0c",
+        authDomain: "sky-stacker-50fc4.firebaseapp.com",
+        projectId: "sky-stacker-50fc4",
+        storageBucket: "sky-stacker-50fc4.firebasestorage.app",
+        messagingSenderId: "1003890691469",
+        appId: "1:1003890691469:web:a4076cd2e52f6ef23281c4",
+        measurementId: "G-018Z6ET7WR"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
-
     canvas.width = 480;
     canvas.height = 800;
 
     let gameState = 'START';
     let score = 0;
-    let bestScore = localStorage.getItem('sky_stacker_best') || 0;
     let combo = 0;
     let cameraY = 0;
     let targetCameraY = 0;
@@ -206,93 +149,49 @@
     let currentWidth = initialBlockWidth;
     let blockSpeed = 3;
 
-    // 기본 더미 랭킹 데이터 초기화 (최초 접속 시 빈 표 방지)
-    function initLeaderboard() {
-      if (!localStorage.getItem('sky_stacker_leaderboard')) {
-        const defaultRanks = [
-          { name: 'STARGAZER', score: 48, time: '01:15' },
-          { name: 'COSMIC_CAKE', score: 35, time: '00:54' },
-          { name: 'CONISENNER', score: 24, time: '00:38' }
-        ];
-        localStorage.setItem('sky_stacker_leaderboard', JSON.stringify(defaultRanks));
-      }
-    }
-    initLeaderboard();
-
     class Block {
       constructor(x, y, width, height, colorIndex) {
-        this.x = x;
-        this.y = y;
-        this.width = width;
-        this.height = height;
-        this.colorIndex = colorIndex;
-        this.dir = 1;
+        this.x = x; this.y = y; this.width = width; this.height = height;
+        this.colorIndex = colorIndex; this.dir = 1;
       }
       update() {
         this.x += blockSpeed * this.dir;
-        if (this.x < 40 || this.x + this.width > canvas.width - 40) {
-          this.dir *= -1;
-        }
+        if (this.x < 40 || this.x + this.width > canvas.width - 40) this.dir *= -1;
       }
       draw() {
         const color = getBlockColor(this.colorIndex);
-        ctx.fillStyle = color.top;
-        ctx.fillRect(this.x, this.y, this.width, this.height);
-        ctx.fillStyle = color.side;
-        ctx.fillRect(this.x, this.y + this.height, this.width, 8);
+        ctx.fillStyle = color.top; ctx.fillRect(this.x, this.y, this.width, this.height);
+        ctx.fillStyle = color.side; ctx.fillRect(this.x, this.y + this.height, this.width, 8);
       }
     }
 
     class CutPiece {
       constructor(x, y, width, height, colorIndex, dir) {
-        this.x = x;
-        this.y = y;
-        this.width = width;
-        this.height = height;
-        this.colorIndex = colorIndex;
-        this.vx = dir * 2;
-        this.vy = -2;
-        this.gravity = 0.4;
-        this.rotation = 0;
-        this.vRot = dir * 0.05;
+        this.x = x; this.y = y; this.width = width; this.height = height;
+        this.colorIndex = colorIndex; this.vx = dir * 2; this.vy = -2;
+        this.gravity = 0.4; this.rotation = 0; this.vRot = dir * 0.05;
       }
-      update() {
-        this.x += this.vx;
-        this.y += this.vy;
-        this.vy += this.gravity;
-        this.rotation += this.vRot;
-      }
+      update() { this.x += this.vx; this.y += this.vy; this.vy += this.gravity; this.rotation += this.vRot; }
       draw() {
         ctx.save();
         ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
         ctx.rotate(this.rotation);
         const color = getBlockColor(this.colorIndex);
-        ctx.fillStyle = color.top;
-        ctx.fillRect(-this.width / 2, -this.height / 2, this.width, this.height);
+        ctx.fillStyle = color.top; ctx.fillRect(-this.width / 2, -this.height / 2, this.width, this.height);
         ctx.restore();
       }
     }
 
     function getBlockColor(index) {
       const hue = (index * 15) % 360;
-      return {
-        top: `hsl(${hue}, 80%, 60%)`,
-        side: `hsl(${hue}, 80%, 40%)`
-      };
+      return { top: `hsl(${hue}, 80%, 60%)`, side: `hsl(${hue}, 80%, 40%)` };
     }
 
     function startGame() {
       gameState = 'PLAYING';
-      score = 0;
-      combo = 0;
-      currentWidth = initialBlockWidth;
-      blockSpeed = 3;
-      blocks = [];
-      cutPieces = [];
-      cameraY = 0;
-      targetCameraY = 0;
-      startTime = Date.now();
-      isScoreSaved = false;
+      score = 0; combo = 0; currentWidth = initialBlockWidth; blockSpeed = 3;
+      blocks = []; cutPieces = []; cameraY = 0; targetCameraY = 0;
+      startTime = Date.now(); isScoreSaved = false;
 
       document.getElementById('startScreen').classList.add('hidden');
       document.getElementById('gameOverScreen').classList.add('hidden');
@@ -303,7 +202,6 @@
 
       const baseBlock = new Block((canvas.width - initialBlockWidth) / 2, canvas.height - 150, initialBlockWidth, blockHeight, 0);
       blocks.push(baseBlock);
-
       spawnNewBlock();
     }
 
@@ -335,19 +233,15 @@
         blocks.push(currentBlock);
         score++;
       } else if (absDiff < currentWidth) {
-        combo = 0;
-        showComboText('');
+        combo = 0; showComboText('');
         const overlapWidth = currentWidth - absDiff;
         let cutWidth = absDiff;
         let cutX = diff > 0 ? currentBlock.x + overlapWidth : currentBlock.x;
 
         cutPieces.push(new CutPiece(cutX, currentBlock.y, cutWidth, blockHeight, currentBlock.colorIndex, diff > 0 ? 1 : -1));
-
         currentWidth = overlapWidth;
         currentBlock.width = overlapWidth;
-        if (diff <= 0) {
-          currentBlock.x = lastBlock.x;
-        }
+        if (diff <= 0) currentBlock.x = lastBlock.x;
 
         blocks.push(currentBlock);
         score++;
@@ -371,69 +265,53 @@
     }
 
     function showGameOver() {
-      if (score > bestScore) {
-        bestScore = score;
-        localStorage.setItem('sky_stacker_best', bestScore);
-      }
       document.getElementById('finalScoreText').innerText = `최종 기록: ${score}층`;
-      document.getElementById('bestScoreText').innerText = `최고 기록: ${bestScore}층`;
-      
-      // 0층일 경우 랭킹 등록 숨김
-      if (score === 0) {
-        document.getElementById('rankInputBox').style.display = 'none';
-      }
+      if (score === 0) document.getElementById('rankInputBox').style.display = 'none';
       document.getElementById('gameOverScreen').classList.remove('hidden');
     }
 
-    // 랭킹 저장 로직
-    function saveScore() {
+    // 파이어베이스 클라우드에 점수 저장
+    async function saveScoreToCloud() {
       if (isScoreSaved || score === 0) return;
 
       const inputEl = document.getElementById('playerNameInput');
-      let playerName = inputEl.value.trim().toUpperCase();
-      if (!playerName) playerName = 'ANONYMOUS';
+      let playerName = inputEl.value.trim().toUpperCase() || 'ANONYMOUS';
 
-      // 시간 포맷팅 (MM:SS)
       const mins = String(Math.floor(playDuration / 60)).padStart(2, '0');
       const secs = String(playDuration % 60).padStart(2, '0');
       const formattedTime = `${mins}:${secs}`;
 
-      // 기존 데이터 불러오기 및 추가
-      const leaderboard = JSON.parse(localStorage.getItem('sky_stacker_leaderboard')) || [];
-      leaderboard.push({ name: playerName, score: score, time: formattedTime });
+      try {
+        await db.collection('leaderboard').add({
+          name: playerName,
+          score: score,
+          time: formattedTime,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
 
-      // 점수 높은 순 정렬 후 상위 10개만 유지
-      leaderboard.sort((a, b) => b.score - a.score);
-      const top10 = leaderboard.slice(0, 10);
-
-      localStorage.setItem('sky_stacker_leaderboard', JSON.stringify(top10));
-
-      isScoreSaved = true;
-      document.getElementById('rankInputBox').style.display = 'none';
-      document.getElementById('saveMessage').innerText = `✅ [${playerName}]님의 기록이 명예의 전당에 등록되었습니다!`;
+        isScoreSaved = true;
+        document.getElementById('rankInputBox').style.display = 'none';
+        document.getElementById('saveMessage').innerText = `✅ 실시간 클라우드 등록 완료!`;
+      } catch (error) {
+        console.error("Error adding document: ", error);
+        document.getElementById('saveMessage').innerText = `❌ 저장 실패 (네트워크를 확인하세요)`;
+      }
     }
 
-    // 입력 이벤트 (인풋창 포커스 중에는 블록 하강 방지)
     window.addEventListener('mousedown', (e) => {
-      if (e.target.tagName !== 'BUTTON' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'A') {
-        dropBlock();
-      }
+      if (e.target.tagName !== 'BUTTON' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'A') dropBlock();
     });
     window.addEventListener('touchstart', (e) => {
       if (e.target.tagName !== 'BUTTON' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'A') {
-        e.preventDefault();
-        dropBlock();
+        e.preventDefault(); dropBlock();
       }
     }, { passive: false });
     window.addEventListener('keydown', (e) => {
       if (document.activeElement.tagName === 'INPUT') {
-        if (e.code === 'Enter') saveScore();
+        if (e.code === 'Enter') saveScoreToCloud();
         return;
       }
-      if (e.code === 'Space') {
-        e.preventDefault();
-        dropBlock();
-      }
+      if (e.code === 'Space') { e.preventDefault(); dropBlock(); }
     });
 
     function gameLoop() {
@@ -443,23 +321,17 @@
       ctx.save();
       ctx.translate(0, cameraY);
 
-      ctx.strokeStyle = '#1E293B';
-      ctx.lineWidth = 1;
+      ctx.strokeStyle = '#1E293B'; ctx.lineWidth = 1;
       for (let i = -10; i < 50; i++) {
-        ctx.beginPath();
-        ctx.moveTo(0, i * 100);
-        ctx.lineTo(canvas.width, i * 100);
-        ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(0, i * 100); ctx.lineTo(canvas.width, i * 100); ctx.stroke();
       }
 
       blocks.forEach(block => block.draw());
       if (gameState === 'PLAYING' && currentBlock) {
-        currentBlock.update();
-        currentBlock.draw();
+        currentBlock.update(); currentBlock.draw();
       }
       cutPieces.forEach((p, index) => {
-        p.update();
-        p.draw();
+        p.update(); p.draw();
         if (p.y > canvas.height + cameraY + 200) cutPieces.splice(index, 1);
       });
 
