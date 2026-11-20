@@ -60,8 +60,8 @@
     .screen-center {
       position: absolute;
       inset: 0;
-      background: rgba(15, 23, 42, 0.85);
-      backdrop-filter: blur(4px);
+      background: rgba(15, 23, 42, 0.88);
+      backdrop-filter: blur(6px);
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -85,21 +85,60 @@
       -webkit-text-fill-color: transparent;
       margin-bottom: 8px;
     }
-    p { color: #94A3B8; margin-bottom: 24px; font-size: 0.95rem; }
+    p { color: #94A3B8; margin-bottom: 20px; font-size: 0.95rem; }
+    
+    .input-group {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      width: 100%;
+      max-width: 300px;
+    }
+    input[type="text"] {
+      flex: 1;
+      padding: 12px 16px;
+      border-radius: 12px;
+      border: 1px solid #334155;
+      background: #1E293B;
+      color: #F8FAFC;
+      font-weight: 700;
+      font-size: 1rem;
+      outline: none;
+    }
+    input[type="text"]:focus {
+      border-color: #22D3EE;
+    }
     .btn {
       background: linear-gradient(to right, #22D3EE, #3B82F6);
       color: #0F172A;
       font-weight: 800;
-      font-size: 1.1rem;
-      padding: 14px 32px;
+      font-size: 1.05rem;
+      padding: 12px 24px;
       border: none;
       border-radius: 9999px;
       cursor: pointer;
       box-shadow: 0 10px 20px rgba(34, 211, 238, 0.3);
       transition: all 0.2s;
+      text-decoration: none;
+      display: inline-block;
     }
     .btn:hover { transform: scale(1.05); filter: brightness(1.1); }
     .btn:active { transform: scale(0.95); }
+    .btn-secondary {
+      background: #334155;
+      color: #F8FAFC;
+      box-shadow: none;
+      margin-top: 12px;
+      font-size: 0.9rem;
+      padding: 10px 20px;
+    }
+    .save-msg {
+      color: #4ADE80;
+      font-size: 0.85rem;
+      font-weight: 700;
+      margin-bottom: 16px;
+      height: 20px;
+    }
   </style>
 </head>
 <body>
@@ -107,7 +146,7 @@
   <div id="game-container">
     <canvas id="gameCanvas"></canvas>
 
-    <!-- 인게임 UI 오버레이 -->
+    <!-- 인게임 UI -->
     <div class="ui-overlay">
       <div class="header-ui">
         <div class="score-box" id="currentScore">0층</div>
@@ -115,18 +154,29 @@
       </div>
     </div>
 
-    <!-- 시작 / 게임오버 화면 -->
+    <!-- 시작 화면 -->
     <div id="startScreen" class="screen-center">
       <h1>SKY STACKER</h1>
       <p>화면을 클릭하거나 터치하여 블록을 쌓으세요!</p>
       <button class="btn" onclick="startGame()">게임 시작</button>
+      <a href="index.html" class="btn btn-secondary">홈으로 돌아가기</a>
     </div>
 
+    <!-- 게임오버 & 랭킹 등록 화면 -->
     <div id="gameOverScreen" class="screen-center hidden">
       <h1>GAME OVER</h1>
-      <p id="finalScoreText" style="font-size: 1.2rem; color: #F8FAFC; margin-bottom: 8px;">최종 기록: 0층</p>
-      <p id="bestScoreText" style="margin-bottom: 24px;">최고 기록: 0층</p>
+      <p id="finalScoreText" style="font-size: 1.25rem; color: #F8FAFC; font-weight: 800; margin-bottom: 4px;">최종 기록: 0층</p>
+      <p id="bestScoreText" style="margin-bottom: 16px;">최고 기록: 0층</p>
+      
+      <!-- 닉네임 입력 및 랭킹 등록 -->
+      <div class="input-group" id="rankInputBox">
+        <input type="text" id="playerNameInput" placeholder="닉네임 입력 (최대 10자)" maxlength="10" />
+        <button class="btn" style="border-radius: 12px; padding: 12px 18px;" onclick="saveScore()">등록</button>
+      </div>
+      <div class="save-msg" id="saveMessage"></div>
+
       <button class="btn" onclick="startGame()">다시 하기</button>
+      <a href="index.html#leaderboard" class="btn btn-secondary">명예의 전당 보기 🏆</a>
     </div>
   </div>
 
@@ -134,27 +184,40 @@
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
 
-    // 캔버스 고정 해상도 설정
     canvas.width = 480;
     canvas.height = 800;
 
-    let gameState = 'START'; // START, PLAYING, GAMEOVER
+    let gameState = 'START';
     let score = 0;
     let bestScore = localStorage.getItem('sky_stacker_best') || 0;
     let combo = 0;
     let cameraY = 0;
     let targetCameraY = 0;
+    let startTime = 0;
+    let playDuration = 0;
+    let isScoreSaved = false;
 
-    // 블록 구조체
     let blocks = [];
     let currentBlock = null;
-    let particles = [];
-    let cutPieces = []; // 잘려나간 조각 파편들
+    let cutPieces = [];
 
     const blockHeight = 35;
     const initialBlockWidth = 200;
     let currentWidth = initialBlockWidth;
     let blockSpeed = 3;
+
+    // 기본 더미 랭킹 데이터 초기화 (최초 접속 시 빈 표 방지)
+    function initLeaderboard() {
+      if (!localStorage.getItem('sky_stacker_leaderboard')) {
+        const defaultRanks = [
+          { name: 'STARGAZER', score: 48, time: '01:15' },
+          { name: 'COSMIC_CAKE', score: 35, time: '00:54' },
+          { name: 'CONISENNER', score: 24, time: '00:38' }
+        ];
+        localStorage.setItem('sky_stacker_leaderboard', JSON.stringify(defaultRanks));
+      }
+    }
+    initLeaderboard();
 
     class Block {
       constructor(x, y, width, height, colorIndex) {
@@ -163,23 +226,18 @@
         this.width = width;
         this.height = height;
         this.colorIndex = colorIndex;
-        this.dir = 1; // 1: 우측, -1: 좌측
+        this.dir = 1;
       }
-
       update() {
         this.x += blockSpeed * this.dir;
-        // 좌우 벽 충돌 시 방향 전환
         if (this.x < 40 || this.x + this.width > canvas.width - 40) {
           this.dir *= -1;
         }
       }
-
       draw() {
         const color = getBlockColor(this.colorIndex);
         ctx.fillStyle = color.top;
         ctx.fillRect(this.x, this.y, this.width, this.height);
-
-        // 입체 측면 효과
         ctx.fillStyle = color.side;
         ctx.fillRect(this.x, this.y + this.height, this.width, 8);
       }
@@ -198,14 +256,12 @@
         this.rotation = 0;
         this.vRot = dir * 0.05;
       }
-
       update() {
         this.x += this.vx;
         this.y += this.vy;
         this.vy += this.gravity;
         this.rotation += this.vRot;
       }
-
       draw() {
         ctx.save();
         ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
@@ -218,7 +274,6 @@
     }
 
     function getBlockColor(index) {
-      // HSL 무지개 그라데이션 순환
       const hue = (index * 15) % 360;
       return {
         top: `hsl(${hue}, 80%, 60%)`,
@@ -236,13 +291,16 @@
       cutPieces = [];
       cameraY = 0;
       targetCameraY = 0;
+      startTime = Date.now();
+      isScoreSaved = false;
 
       document.getElementById('startScreen').classList.add('hidden');
       document.getElementById('gameOverScreen').classList.add('hidden');
       document.getElementById('currentScore').innerText = '0층';
       document.getElementById('comboText').innerText = '';
+      document.getElementById('saveMessage').innerText = '';
+      document.getElementById('rankInputBox').style.display = 'flex';
 
-      // 기준 바닥 블록 생성
       const baseBlock = new Block((canvas.width - initialBlockWidth) / 2, canvas.height - 150, initialBlockWidth, blockHeight, 0);
       blocks.push(baseBlock);
 
@@ -252,7 +310,6 @@
     function spawnNewBlock() {
       const lastBlock = blocks[blocks.length - 1];
       const nextY = lastBlock.y - blockHeight;
-      // 속도 점진적 증가
       blockSpeed = 3 + Math.floor(blocks.length / 5) * 0.5;
       currentBlock = new Block(40, nextY, currentWidth, blockHeight, blocks.length);
     }
@@ -264,12 +321,10 @@
       const diff = currentBlock.x - lastBlock.x;
       const absDiff = Math.abs(diff);
 
-      // 완벽 판정 (Perfect)
       if (absDiff < 4) {
-        currentBlock.x = lastBlock.x; // 오차 보정
+        currentBlock.x = lastBlock.x;
         combo++;
         if (combo >= 3) {
-          // 3연속 퍼펙트 시 너비 회복 보상
           currentWidth = Math.min(initialBlockWidth, currentWidth + 10);
           currentBlock.width = currentWidth;
           showComboText('✨ PERFECT + 콤보 보상!');
@@ -280,44 +335,32 @@
         blocks.push(currentBlock);
         score++;
       } else if (absDiff < currentWidth) {
-        // 일반 착지 및 절단 판정
         combo = 0;
         showComboText('');
         const overlapWidth = currentWidth - absDiff;
-        
         let cutWidth = absDiff;
         let cutX = diff > 0 ? currentBlock.x + overlapWidth : currentBlock.x;
 
-        // 절단된 파편 추가
         cutPieces.push(new CutPiece(cutX, currentBlock.y, cutWidth, blockHeight, currentBlock.colorIndex, diff > 0 ? 1 : -1));
 
-        // 새 블록 크기 및 위치 조정
         currentWidth = overlapWidth;
         currentBlock.width = overlapWidth;
-        if (diff > 0) {
-          // 우측이 잘려나간 경우 위치 유지
-        } else {
-          // 좌측이 잘려나간 경우 위치 재조정
+        if (diff <= 0) {
           currentBlock.x = lastBlock.x;
         }
 
         blocks.push(currentBlock);
         score++;
       } else {
-        // 완전 빗나감 (게임 오버)
         gameState = 'GAMEOVER';
+        playDuration = Math.floor((Date.now() - startTime) / 1000);
         cutPieces.push(new CutPiece(currentBlock.x, currentBlock.y, currentWidth, blockHeight, currentBlock.colorIndex, 1));
         showGameOver();
         return;
       }
 
       document.getElementById('currentScore').innerText = `${score}층`;
-
-      // 카메라 위로 스크롤 연출
-      if (blocks.length > 5) {
-        targetCameraY += blockHeight;
-      }
-
+      if (blocks.length > 5) targetCameraY += blockHeight;
       spawnNewBlock();
     }
 
@@ -334,38 +377,72 @@
       }
       document.getElementById('finalScoreText').innerText = `최종 기록: ${score}층`;
       document.getElementById('bestScoreText').innerText = `최고 기록: ${bestScore}층`;
+      
+      // 0층일 경우 랭킹 등록 숨김
+      if (score === 0) {
+        document.getElementById('rankInputBox').style.display = 'none';
+      }
       document.getElementById('gameOverScreen').classList.remove('hidden');
     }
 
-    // 입력 이벤트 리스너 (마우스 클릭 / 터치 / 스페이스바)
+    // 랭킹 저장 로직
+    function saveScore() {
+      if (isScoreSaved || score === 0) return;
+
+      const inputEl = document.getElementById('playerNameInput');
+      let playerName = inputEl.value.trim().toUpperCase();
+      if (!playerName) playerName = 'ANONYMOUS';
+
+      // 시간 포맷팅 (MM:SS)
+      const mins = String(Math.floor(playDuration / 60)).padStart(2, '0');
+      const secs = String(playDuration % 60).padStart(2, '0');
+      const formattedTime = `${mins}:${secs}`;
+
+      // 기존 데이터 불러오기 및 추가
+      const leaderboard = JSON.parse(localStorage.getItem('sky_stacker_leaderboard')) || [];
+      leaderboard.push({ name: playerName, score: score, time: formattedTime });
+
+      // 점수 높은 순 정렬 후 상위 10개만 유지
+      leaderboard.sort((a, b) => b.score - a.score);
+      const top10 = leaderboard.slice(0, 10);
+
+      localStorage.setItem('sky_stacker_leaderboard', JSON.stringify(top10));
+
+      isScoreSaved = true;
+      document.getElementById('rankInputBox').style.display = 'none';
+      document.getElementById('saveMessage').innerText = `✅ [${playerName}]님의 기록이 명예의 전당에 등록되었습니다!`;
+    }
+
+    // 입력 이벤트 (인풋창 포커스 중에는 블록 하강 방지)
     window.addEventListener('mousedown', (e) => {
-      if (e.target.tagName !== 'BUTTON') dropBlock();
+      if (e.target.tagName !== 'BUTTON' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'A') {
+        dropBlock();
+      }
     });
     window.addEventListener('touchstart', (e) => {
-      if (e.target.tagName !== 'BUTTON') {
+      if (e.target.tagName !== 'BUTTON' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'A') {
         e.preventDefault();
         dropBlock();
       }
     }, { passive: false });
     window.addEventListener('keydown', (e) => {
+      if (document.activeElement.tagName === 'INPUT') {
+        if (e.code === 'Enter') saveScore();
+        return;
+      }
       if (e.code === 'Space') {
         e.preventDefault();
         dropBlock();
       }
     });
 
-    // 메인 게임 루프
     function gameLoop() {
-      // 카메라 부드러운 보간 (Lerp)
       cameraY += (targetCameraY - cameraY) * 0.1;
-
-      // 화면 클리어
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       ctx.save();
       ctx.translate(0, cameraY);
 
-      // 배경 그리드 선 연출
       ctx.strokeStyle = '#1E293B';
       ctx.lineWidth = 1;
       for (let i = -10; i < 50; i++) {
@@ -375,30 +452,21 @@
         ctx.stroke();
       }
 
-      // 기존 블록들 렌더링
       blocks.forEach(block => block.draw());
-
-      // 현재 움직이는 블록 렌더링
       if (gameState === 'PLAYING' && currentBlock) {
         currentBlock.update();
         currentBlock.draw();
       }
-
-      // 잘려나간 파편들 업데이트 및 렌더링
       cutPieces.forEach((p, index) => {
         p.update();
         p.draw();
-        if (p.y > canvas.height + cameraY + 200) {
-          cutPieces.splice(index, 1);
-        }
+        if (p.y > canvas.height + cameraY + 200) cutPieces.splice(index, 1);
       });
 
       ctx.restore();
-
       requestAnimationFrame(gameLoop);
     }
 
-    // 루프 실행
     gameLoop();
   </script>
 </body>
